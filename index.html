@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SBV360 - Gestión de Subvenciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- ICONOS -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-dark: #1d4ed8;
+      --background-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #1e293b;
+      --text-light: #64748b;
+      --success-color: #22c55e;
+      --warning-color: #eab308;
+      --danger-color: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* Header fijo */
+    header {
+      background-color: var(--card-bg);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    nav ul {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    nav a {
+      color: var(--text-color);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    nav a:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Contenedor principal: barras de publicidad + contenido */
+    .ads-and-content {
+      display: flex;
+      justify-content: center;
+      margin-top: 5rem; /* espacio para el header fijo */
+    }
+
+    .advert-lateral {
+      width: 250px; /* Más ancha */
+      min-height: 300px;
+      background: #fff9db; /* leve color */
+      border: 1px dashed #c2b200;
+      margin: 1rem;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Contenedor central del contenido (subvenciones, dashboard, notificaciones...) */
+    .main-content {
+      flex: 1;
+      max-width: 1000px;
+      margin: 1rem;
+    }
+
+    /* Search bar */
+    .search-bar {
+      margin: 2rem auto;
+      max-width: 600px;
+      position: relative;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 1rem;
+      padding-left: 3rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .search-bar i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+
+    /* Filtros + Subvenciones */
+    .filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .filter-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .filter-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* 3 subvenciones por fila */
+    #subventions-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .subvention-card {
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .subvention-card:hover {
+      transform: translateY(-5px);
+    }
+    .subvention-card h2 {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e2e8f0;
+    }
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .status-active {
+      background-color: #dcfce7;
+      color: var(--success-color);
+    }
+    .status-pending {
+      background-color: #fef9c3;
+      color: var(--warning-color);
+    }
+    .status-closed {
+      background-color: #fee2e2;
+      color: var(--danger-color);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .action-btn {
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      background-color: #f1f5f9;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Loading */
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Secciones Dashboard, Notificaciones */
+    .card {
+      background-color: var(--card-bg);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    #dashboard-section.hidden,
+    #notifications-section.hidden {
+      display: none;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--card-bg);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-light);
+      margin-top: 2rem;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      #subventions-list {
+        grid-template-columns: repeat(2, 1fr); /* 2 por fila en pantallas medianas */
+      }
+    }
+    @media (max-width: 600px) {
+      #subventions-list {
+        grid-template-columns: 1fr; /* 1 por fila en móviles */
+      }
+    }
+
+    /* Auth Popup */
+    .auth-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+    }
+    .auth-content {
+      background-color: var(--card-bg);
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .auth-content h2 {
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+    .auth-content form div {
+      margin-bottom: 1rem;
+    }
+    .auth-content label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .auth-content input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+    }
+    .auth-content button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .auth-content button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* Detalles popup */
+    .details-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .details-content {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+    }
+    .details-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  </style>
+
+  <!-- Google Ads (ejemplo) 
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+  ></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-XXXXXXXXXXXXXXX",
+      enable_page_level_ads: true,
+    });
+  </script>
+  -->
+</head>
+
+<body>
+  <!-- HEADER fijo arriba -->
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-hand-holding-dollar"></i> SBV360
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#" id="home-link"><i class="fas fa-home"></i> Inicio</a></li>
+          <li><a href="#" id="dashboard-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="#" id="notifications-link"><i class="fas fa-bell"></i> Notificaciones</a></li>
+          <li><a href="#" id="register-link"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+          <li><a href="#" id="login-link"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor con PUBLICIDAD lateral + Contenido central -->
+  <div class="ads-and-content">
+    <!-- Publicidad lateral izquierda -->
+    <div class="advert-lateral">
+      <h3>Publicidad</h3>
+      <!-- Ejemplo Google Ads 
+      <ins
+        class="adsbygoogle"
+        style="display:block;width:250px;height:250px;"
+        data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+        data-ad-slot="ZZZZZZZZZZ"
+      ></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+      -->
+      <p>Espacio Publicitario</p>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="Buscar subvenciones..." />
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn active" data-status="all">Todas</button>
+        <button class="filter-btn" data-status="active">Activas</button>
+        <button class="filter-btn" data-status="pending">Pendientes</button>
+        <button class="filter-btn" data-status="closed">Cerradas</button>
+      </div>
+
+      <!-- Spinner de carga -->
+      <div id="loading" class="loading-spinner" style="display:none;">
+        <div class="spinner"></div>
+        <p>Cargando subvenciones...</p>
+      </div>
+
+      <!-- Lista de subvenciones -->
+      <section id="subventions-list"></section>
+
+      <!-- Sección Dashboard (oculto al inicio) -->
+      <section id="dashboard-section" class="card hidden">
+        <h2>Mi Dashboard</h2>
+        <p>Aquí verás tus subvenciones solicitadas y estados.</p>
+        <div id="dashboardList">No tienes solicitudes aún.</div>
+      </section>
+
+      <!-- Sección Notificaciones (oculto al inicio) -->
+      <section id="notifications-section" class="card hidden">
+        <h2>Notificaciones</h2>
+        <ul id="notificationsList" style="list-style:none; padding-left:0;"></ul>
+      </section>
+    </div>
+
+    <!-- Publicidad lateral derecha -->
+    <div class="advert-lateral">
+      <h3>Publicidad</h3>
+      <!-- Ejemplo Google Ads 
+      <ins
+        class="adsbygoogle"
+        style="display:block;width:250px;height:250px;"
+        data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+        data-ad-slot="YYYYYYYYYY"
+      ></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+      -->
+      <p>Espacio Publicitario</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2024 SBV360 - Plataforma de Gestión de Subvenciones</p>
+  </footer>
+
+  <!-- POP-UP AUTH -->
+  <div id="auth-popup" class="auth-popup">
+    <div class="auth-content">
+      <span class="close-btn">&times;</span>
+      <h2 id="auth-title">Registro</h2>
+      <form id="auth-form">
+        <div>
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div>
+          <label for="password">Contraseña:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <button type="submit" id="auth-submit">Registrarse</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POP-UP DETALLES -->
+  <div id="details-popup" class="details-popup">
+    <div class="details-content" id="details-content">
+      <span class="details-close" id="details-close">&times;</span>
+      <!-- Se inyectan detalles -->
+    </div>
+  </div>
+
+  <script>
+    /* JS: Prácticamente el mismo que antes, adaptado a la nueva distribución */
+    let isLoggedIn = false;
+    let userEmail = "";
+    let userSolicitudes = [];
+
+    // Subvenciones (3 en fila => ya configurado con CSS)
+    const sampleData = [
+      {
+        id: 1,
+        title: "Subvención para Digitalización Empresarial",
+        description: "Ayudas para la transformación digital de pymes.",
+        status: "active",
+        amount: "50.000€",
+        deadline: "2024-06-30",
+        requirements: "Documentación fiscal, plan de negocio, informe de viabilidad."
+      },
+      {
+        id: 2,
+        title: "Ayudas para Eficiencia Energética",
+        description:
+          "Programa de incentivos para mejoras en la eficiencia energética de edificios.",
+        status: "pending",
+        amount: "75.000€",
+        deadline: "2024-07-15",
+        requirements: "Certificado energético, presupuesto detallado, informe técnico."
+      },
+      {
+        id: 3,
+        title: "Fondo de Innovación Industrial",
+        description: "Apoyo a proyectos de innovación en el sector industrial.",
+        status: "closed",
+        amount: "100.000€",
+        deadline: "2024-05-01",
+        requirements: "Plan de innovación, informe de mercado, presupuesto detallado."
+      }
+    ];
+
+    // Notificaciones (ejemplo)
+    let notifications = [
+      {
+        id: 1,
+        text: "Tu subvención 'Digitalización Empresarial' ahora está 'En proceso'."
+      },
+      {
+        id: 2,
+        text: "Nueva convocatoria de Eficiencia Energética disponible."
+      }
+    ];
+
+    // Carga inicial
+    document.getElementById("loading").style.display = "block";
+    setTimeout(() => {
+      const subventionsList = document.getElementById("subventions-list");
+      sampleData.forEach((subv) => {
+        const card = document.createElement("div");
+        card.className = "subvention-card";
+        card.setAttribute("data-status", subv.status);
+
+        const statusClass = `status-${subv.status}`;
+        const statusText = {
+          active: "Activa",
+          pending: "Pendiente",
+          closed: "Cerrada"
+        }[subv.status];
+
+        card.innerHTML = `
+          <h2>${subv.title}</h2>
+          <p>${subv.description}</p>
+          <div class="card-meta">
+            <span class="status-badge ${statusClass}">${statusText}</span>
+            <div class="card-actions">
+              <button class="action-btn" title="Descargar información">
+                <i class="fas fa-download"></i>
+              </button>
+              <button class="action-btn" title="Compartir">
+                <i class="fas fa-share-alt"></i>
+              </button>
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem;">
+            <small style="color: var(--text-light);">
+              <i class="fas fa-euro-sign"></i> ${subv.amount} |
+              <i class="fas fa-calendar"></i> Fecha límite: ${subv.deadline}
+            </small>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          if (!isLoggedIn) {
+            alert("Debes iniciar sesión para ver esta subvención.");
+            return;
+          }
+          openSubventionPopup(subv.id);
+        });
+
+        subventionsList.appendChild(card);
+      });
+      document.getElementById("loading").style.display = "none";
+    }, 1000);
+
+    // Popup para detalle de subvención
+    function openSubventionPopup(subvId) {
+      const found = sampleData.find((s) => s.id === subvId);
+      if (!found) return;
+
+      const already = userSolicitudes.some((u) => u.title === found.title);
+      const statusText = {
+        active: "Activa",
+        pending: "Pendiente",
+        closed: "Cerrada"
+      }[found.status] || found.status;
+
+      let html = `
+        <span class="details-close" id="details-close-popup">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom:1rem;">
+          ${found.title}
+        </h2>
+        <p><strong>Descripción:</strong> ${found.description}</p>
+        <p><strong>Requisitos:</strong> ${found.requirements}</p>
+        <p><strong>Estado:</strong> ${statusText}</p>
+        <hr style="margin:1rem 0;">
+      `;
+      if (!already) {
+        html += `<button class="btn" onclick="requestSubvention(${subvId})">
+                  Solicitar
+                </button>`;
+      } else {
+        html += `<button class="btn" disabled>Ya solicitada</button>`;
+      }
+
+      document.getElementById("details-content").innerHTML = html;
+      document.getElementById("details-popup").style.display = "flex";
+
+      const closeBtn = document.getElementById("details-close-popup");
+      closeBtn.addEventListener("click", () => {
+        document.getElementById("details-popup").style.display = "none";
+      });
+    }
+
+    function requestSubvention(subvId) {
+      const found = sampleData.find((s) => s.id === subvId);
+      if (!found) return;
+      const already = userSolicitudes.some((u) => u.title === found.title);
+      if (already) {
+        alert("Ya has solicitado esta subvención.");
+        return;
+      }
+      userSolicitudes.push({
+        title: found.title,
+        description: found.description,
+        requirements: found.requirements,
+        status: "En trámite"
+      });
+      alert(`Has solicitado la subvención: "${found.title}".`);
+      document.getElementById("details-popup").style.display = "none";
+      renderDashboard();
+    }
+
+    // Filtros
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const status = btn.getAttribute("data-status");
+        const cards = document.querySelectorAll(".subvention-card");
+        cards.forEach((card) => {
+          const cardStatus = card.getAttribute("data-status");
+          if (status === "all" || cardStatus === status) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      });
+    });
+
+    // Auth popup
+    const authPopup = document.getElementById("auth-popup");
+    const closeBtn = document.querySelector(".close-btn");
+    const authForm = document.getElementById("auth-form");
+    const authTitle = document.getElementById("auth-title");
+    const authSubmit = document.getElementById("auth-submit");
+
+    const registerLink = document.getElementById("register-link");
+    const loginLink = document.getElementById("login-link");
+
+    registerLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      authTitle.textContent = "Registro";
+      authSubmit.textContent = "Registrarse";
+      authPopup.style.display = "flex";
+    });
+    loginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      authTitle.textContent = "Iniciar Sesión";
+      authSubmit.textContent = "Iniciar Sesión";
+      authPopup.style.display = "flex";
+    });
+    closeBtn.addEventListener("click", () => {
+      authPopup.style.display = "none";
+    });
+    window.addEventListener("click", (e) => {
+      if (e.target === authPopup) {
+        authPopup.style.display = "none";
+      }
+    });
+
+    // Registro / Login simulado
+    authForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (authTitle.textContent === "Registro") {
+        alert(`Registro completado para ${email}!`);
+        registerLink.style.display = "none"; // Ocultamos "Registrarse"
+        isLoggedIn = true;
+        userEmail = email;
+      } else {
+        alert(`Bienvenido, ${email}. ¡Ya iniciaste sesión!`);
+        isLoggedIn = true;
+        userEmail = email;
+      }
+      authPopup.style.display = "none";
+    });
+
+    // Buscador
+    const searchInput = document.getElementById("search-input");
+    searchInput.addEventListener("input", () => {
+      const val = searchInput.value.toLowerCase();
+      const cards = document.querySelectorAll(".subvention-card");
+      cards.forEach((c) => {
+        const title = c.querySelector("h2").textContent.toLowerCase();
+        const desc = c.querySelector("p").textContent.toLowerCase();
+        if (title.includes(val) || desc.includes(val)) {
+          c.style.display = "block";
+        } else {
+          c.style.display = "none";
+        }
+      });
+    });
+
+    // Navegación
+    const homeLink = document.getElementById("home-link");
+    const dashboardLink = document.getElementById("dashboard-link");
+    const notificationsLink = document.getElementById("notifications-link");
+
+    const subventionsListSection = document.getElementById("subventions-list");
+    const dashboardSection = document.getElementById("dashboard-section");
+    const notificationsSection = document.getElementById("notifications-section");
+
+    homeLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      subventionsListSection.style.display = "grid";
+      dashboardSection.classList.add("hidden");
+      notificationsSection.classList.add("hidden");
+    });
+    dashboardLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!isLoggedIn) {
+        alert("Debes iniciar sesión para ver tu Dashboard.");
+        return;
+      }
+      subventionsListSection.style.display = "none";
+      notificationsSection.classList.add("hidden");
+      dashboardSection.classList.remove("hidden");
+      renderDashboard();
+    });
+    notificationsLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!isLoggedIn) {
+        alert("Debes iniciar sesión para ver Notificaciones.");
+        return;
+      }
+      subventionsListSection.style.display = "none";
+      dashboardSection.classList.add("hidden");
+      notificationsSection.classList.remove("hidden");
+      renderNotifications();
+    });
+
+    // RENDER Dashboard
+    function renderDashboard() {
+      const dashList = document.getElementById("dashboardList");
+      if (!userSolicitudes.length) {
+        dashList.innerHTML = "No tienes solicitudes aún.";
+        return;
+      }
+      let html = '<ul style="list-style:none; padding-left:0;">';
+      userSolicitudes.forEach((sol, idx) => {
+        html += `
+          <li style="margin-bottom:1rem;">
+            <div style="padding:0.5rem; border:1px solid #e2e8f0; border-radius:0.5rem;">
+              <strong>${sol.title}</strong>
+              <span style="float:right; color:#64748b;">
+                Estado: ${sol.status}
+              </span><br/>
+              <small style="color:#64748b;">${sol.description}</small><br/>
+              <button class="btn" onclick="openDashboardDetails(${idx})">
+                Ver Detalle
+              </button>
+            </div>
+          </li>
+        `;
+      });
+      html += "</ul>";
+      dashList.innerHTML = html;
+    }
+
+    // RENDER Notificaciones
+    function renderNotifications() {
+      const notiList = document.getElementById("notificationsList");
+      notiList.innerHTML = "";
+      if (!notifications.length) {
+        notiList.innerHTML = "<li>No hay notificaciones nuevas.</li>";
+        return;
+      }
+      notifications.forEach((notif) => {
+        const li = document.createElement("li");
+        li.style.padding = "0.75rem";
+        li.style.borderBottom = "1px solid #e2e8f0";
+        li.textContent = notif.text;
+        notiList.appendChild(li);
+      });
+    }
+
+    // Detalle desde Dashboard
+    const detailsPopup = document.getElementById("details-popup");
+    const detailsClose = document.getElementById("details-close");
+    const detailsContent = document.getElementById("details-content");
+
+    function openDashboardDetails(index) {
+      const sol = userSolicitudes[index];
+      detailsContent.innerHTML = `
+        <span class="details-close" id="details-close-popup">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom:1rem;">
+          ${sol.title}
+        </h2>
+        <p><strong>Descripción:</strong> ${sol.description}</p>
+        <p><strong>Requisitos:</strong> ${sol.requirements}</p>
+        <p><strong>Estado actual:</strong> ${sol.status}</p>
+        <hr style="margin:1rem 0;">
+        <button class="btn" onclick="requestTramite(${index})">
+          Quiero solicitar que me lleven los trámites
+        </button>
+      `;
+      detailsPopup.style.display = "flex";
+      const close2 = document.getElementById("details-close-popup");
+      close2.addEventListener("click", () => {
+        detailsPopup.style.display = "none";
+      });
+    }
+
+    detailsClose.addEventListener("click", () => {
+      detailsPopup.style.display = "none";
+    });
+    window.addEventListener("click", (e) => {
+      if (e.target === detailsPopup) {
+        detailsPopup.style.display = "none";
+      }
+    });
+
+    // “Solicitar que lleven trámites”
+    function requestTramite(index) {
+      userSolicitudes[index].status = "En proceso";
+      alert(
+        `Has solicitado que te llevemos los trámites de "${userSolicitudes[index].title}".\nEstado ahora: "En proceso".`
+      );
+      detailsPopup.style.display = "none";
+      renderDashboard();
+    }
+  </script>
+</body>
+</html>
